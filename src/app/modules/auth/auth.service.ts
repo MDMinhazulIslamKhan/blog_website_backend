@@ -100,13 +100,75 @@ const changePassword = async (
   isUserExist.save();
 };
 
-const getOwnProfile = (payload: any) => {};
-const updateOwnProfile = (id: any, payload: any) => {};
+const getOwnProfile = async (
+  userInfo: UserInfoFromToken,
+): Promise<IAuth | null> => {
+  const result = await Auth.findById(userInfo.id);
+  if (!result) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile is not exist!!!');
+  }
+  return result;
+};
 
+const updateOwnProfile = async (
+  payload: Partial<IAuth>,
+  userInfo: UserInfoFromToken,
+): Promise<IAuth | null> => {
+  const user = await Auth.findById(userInfo.id);
+  if (!user) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile is not exist!!!');
+  }
+
+  if (payload.email) {
+    const checkEmail = await Auth.findOne({ email: payload.email });
+
+    if (checkEmail) {
+      throw new ApiError(httpStatus.CONFLICT, 'Already used this email!!!');
+    }
+  }
+  const result = await Auth.findOneAndUpdate({ _id: userInfo.id }, payload, {
+    new: true,
+  });
+  return result;
+};
+
+const refreshToken = async (
+  token: string,
+): Promise<{ accessToken: string }> => {
+  let verifiedToken = null;
+  try {
+    verifiedToken = jwtHelpers.verifyToken(
+      token,
+      config.jwt.refresh_secret as Secret,
+    );
+  } catch (err) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Invalid Refresh Token');
+  }
+
+  const { email } = verifiedToken;
+
+  const isUserExist = await Auth.isUserExist(email);
+
+  if (!isUserExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist');
+  }
+  const { id } = isUserExist;
+
+  const accessToken = jwtHelpers.createToken(
+    { id },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string,
+  );
+
+  return {
+    accessToken: accessToken,
+  };
+};
 export const AuthService = {
   createUser,
   login,
   changePassword,
   getOwnProfile,
   updateOwnProfile,
+  refreshToken,
 };

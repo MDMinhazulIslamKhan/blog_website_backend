@@ -34,4 +34,10 @@ router.patch(
   AuthController.updateOwnProfile,
 );
 
+router.post(
+  '/refresh-token',
+  validateRequest(AuthValidation.refreshTokenZodSchema),
+  AuthController.refreshToken,
+);
+
 export const AuthRouters = router;

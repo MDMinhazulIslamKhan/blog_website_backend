@@ -86,10 +86,31 @@ const updateOwnProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies;
+
+  const result = await AuthService.refreshToken(refreshToken);
+
+  const cookieOptions = {
+    secure: config.env === 'production',
+    httpOnly: true,
+  };
+
+  res.cookie('refreshToken', refreshToken, cookieOptions);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Access token get successfully',
+    data: result,
+  });
+});
+
 export const AuthController = {
   createUser,
   login,
   changePassword,
   getOwnProfile,
   updateOwnProfile,
+  refreshToken,
 };
