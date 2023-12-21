@@ -4,10 +4,19 @@ import sendResponse from '../../../shared/sendResponse';
 import httpStatus from 'http-status';
 import { UserInfoFromToken } from '../../../interfaces/common';
 import { AuthService } from './auth.service';
+import config from '../../../config';
 
 const createUser: RequestHandler = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await AuthService.createUser(req.body);
+    const resultWithRefreshToken = await AuthService.createUser(req.body);
+    const { refreshToken, ...result } = resultWithRefreshToken;
+
+    // set refresh token into cookies
+    const cookieOptions = {
+      secure: config.env === 'production',
+      httpOnly: true,
+    };
+    res.cookie('refreshToken', refreshToken, cookieOptions);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -19,7 +28,14 @@ const createUser: RequestHandler = catchAsync(
 );
 
 const login = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthService.login(req.body);
+  const resultWithRefreshToken = await AuthService.login(req.body);
+  const { refreshToken, ...result } = resultWithRefreshToken;
+
+  const cookieOptions = {
+    secure: config.env === 'production',
+    httpOnly: true,
+  };
+  res.cookie('refreshToken', refreshToken, cookieOptions);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
