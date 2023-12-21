@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { Role } from '../app/modules/user/user.constant';
 import { IGenericErrorMessages } from './error';
 
 export type IGenericErrorResponse = {
