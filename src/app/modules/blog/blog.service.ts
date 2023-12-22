@@ -329,6 +329,183 @@ const removeLike = async (
 
   return result;
 };
+
+const commentOnBlog = async (
+  blogId: string,
+  userInfo: UserInfoFromToken,
+  comment: string,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+
+  const result = await Blog.findByIdAndUpdate(
+    blogId,
+    {
+      $push: {
+        comments: {
+          user: userInfo.id,
+          text: comment,
+        },
+      },
+    },
+    { new: true },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
+const updateComment = async (
+  blogId: string,
+  commentId: string,
+  userInfo: UserInfoFromToken,
+  updatedComment: string,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+  const comment = blog.comments.find(com => {
+    return com.user == userInfo.id && com._id == commentId;
+  });
+  if (!comment) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'This is not your comment or comment is not exist!!!',
+    );
+  }
+
+  const result = await Blog.findOneAndUpdate(
+    {
+      $and: [{ _id: blogId }, { 'comments._id': commentId }],
+    },
+    {
+      $set: {
+        'comments.$.text': updatedComment,
+      },
+    },
+    { new: true },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
+const deleteComment = async (
+  blogId: string,
+  commentId: string,
+  userInfo: UserInfoFromToken,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+  const comment = blog.comments.find(com => {
+    return com.user == userInfo.id && com._id == commentId;
+  });
+
+  if (!comment) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'This is not your comment or comment is not exist!!!',
+    );
+  }
+
+  const result = await Blog.findOneAndUpdate(
+    {
+      $and: [{ _id: blogId }],
+    },
+    {
+      $pull: { comments: { _id: commentId } },
+    },
+    { new: true },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
 export const BlogService = {
   createBlog,
   getAllBlogs,
@@ -337,4 +514,7 @@ export const BlogService = {
   deleteBlog,
   likeOnBlog,
   removeLike,
+  commentOnBlog,
+  updateComment,
+  deleteComment,
 };

@@ -9,11 +9,13 @@ export type IBlog = {
   comments: [
     {
       user: Types.ObjectId;
+      _id: string;
       text: string;
       createdAt: Date;
       replies: [
         {
           user: Types.ObjectId;
+          _id: string;
           text: string;
           createdAt: Date;
         },

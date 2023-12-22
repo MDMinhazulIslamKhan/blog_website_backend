@@ -119,6 +119,61 @@ const removeLike = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const commentOnBlog = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const comment = req.body.text;
+  const result = await BlogService.commentOnBlog(
+    blogId,
+    req.user as UserInfoFromToken,
+    comment,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Comment posted Successfully.',
+    data: result,
+  });
+});
+
+const updateComment = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const commentId = req.params.commentId;
+  const comment = req.body.text;
+
+  const result = await BlogService.updateComment(
+    blogId,
+    commentId,
+    req.user as UserInfoFromToken,
+    comment,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Comment updated Successfully.',
+    data: result,
+  });
+});
+
+const deleteComment = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const commentId = req.params.commentId;
+
+  const result = await BlogService.deleteComment(
+    blogId,
+    commentId,
+    req.user as UserInfoFromToken,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Comment deleted Successfully.',
+    data: result,
+  });
+});
+
 export const BlogController = {
   createBlog,
   getAllBlogs,
@@ -127,9 +182,9 @@ export const BlogController = {
   deleteBlog,
   likeOnBlog,
   removeLike,
-  // commentOnBlog,
-  // updateComment,
-  // deleteComment,
+  commentOnBlog,
+  updateComment,
+  deleteComment,
   // replayOnComment,
   // updateReplay,
   // deleteReplay,

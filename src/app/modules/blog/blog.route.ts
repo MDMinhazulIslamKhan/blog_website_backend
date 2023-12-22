@@ -30,19 +30,25 @@ router.post('/like/:id', auth(), BlogController.likeOnBlog);
 
 router.delete('/remove-like/:id', auth(), BlogController.removeLike);
 
-// router.post('/:blogId/comment', auth(), BlogController.commentOnBlog);
+router.post(
+  '/:blogId/comment',
+  auth(),
+  validateRequest(BlogValidation.commentOrReplayZodSchema),
+  BlogController.commentOnBlog,
+);
 
-// router.patch(
-//   '/:blogId/comment/:commentId',
-//   auth(),
-//   BlogController.updateComment,
-// );
+router.patch(
+  '/:blogId/comment/:commentId',
+  auth(),
+  validateRequest(BlogValidation.commentOrReplayUpdateZodSchema),
+  BlogController.updateComment,
+);
 
-// router.delete(
-//   '/:blogId/comment/:commentId',
-//   auth(),
-//   BlogController.deleteComment,
-// );
+router.delete(
+  '/:blogId/comment/:commentId',
+  auth(),
+  BlogController.deleteComment,
+);
 
 // router.post(
 //   '/:blogId/comment/:commentId',
