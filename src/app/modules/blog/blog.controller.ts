@@ -174,6 +174,68 @@ const deleteComment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const replayOnComment = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const commentId = req.params.commentId;
+  const replay = req.body.text;
+
+  const result = await BlogService.replayOnComment(
+    blogId,
+    commentId,
+    req.user as UserInfoFromToken,
+    replay,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Replay posted Successfully.',
+    data: result,
+  });
+});
+
+const updateReplay = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const commentId = req.params.commentId;
+  const replayId = req.params.replayId;
+  const replay = req.body.text;
+
+  const result = await BlogService.updateReplay(
+    blogId,
+    commentId,
+    replayId,
+    req.user as UserInfoFromToken,
+    replay,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Replay updated Successfully.',
+    data: result,
+  });
+});
+
+const deleteReplay = catchAsync(async (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+  const commentId = req.params.commentId;
+  const replayId = req.params.replayId;
+
+  const result = await BlogService.deleteReplay(
+    blogId,
+    commentId,
+    replayId,
+    req.user as UserInfoFromToken,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Replay deleted Successfully.',
+    data: result,
+  });
+});
+
 export const BlogController = {
   createBlog,
   getAllBlogs,
@@ -185,7 +247,7 @@ export const BlogController = {
   commentOnBlog,
   updateComment,
   deleteComment,
-  // replayOnComment,
-  // updateReplay,
-  // deleteReplay,
+  replayOnComment,
+  updateReplay,
+  deleteReplay,
 };

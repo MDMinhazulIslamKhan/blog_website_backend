@@ -506,6 +506,220 @@ const deleteComment = async (
   return result;
 };
 
+const replayOnComment = async (
+  blogId: string,
+  commentId: string,
+  userInfo: UserInfoFromToken,
+  replay: string,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+  const comment = blog.comments.find(com => com._id == commentId);
+
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Comment is not exist!!!');
+  }
+
+  const replayData = {
+    user: userInfo.id,
+    text: replay,
+  };
+  const result = await Blog.findOneAndUpdate(
+    {
+      $and: [{ _id: blogId }, { 'comments._id': commentId }],
+    },
+    {
+      $push: {
+        'comments.$.replies': replayData,
+      },
+    },
+    { new: true },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
+const updateReplay = async (
+  blogId: string,
+  commentId: string,
+  replayId: string,
+  userInfo: UserInfoFromToken,
+  updatedReplay: string,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+
+  const comment = blog.comments.find(com => com._id == commentId);
+
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Comment is not exist!!!');
+  }
+  const replay = comment.replies.find(rep => rep._id == replayId);
+
+  if (!replay) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Replay is not exist!!!');
+  }
+
+  if (replay.user != userInfo.id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This is not your replay!!!');
+  }
+
+  const result = await Blog.findOneAndUpdate(
+    {
+      $and: [
+        { _id: blogId },
+        { 'comments._id': commentId },
+        { 'comments.replies._id': replayId },
+      ],
+    },
+    {
+      $set: {
+        'comments.$[comment].replies.$[reply].text': updatedReplay,
+      },
+    },
+    {
+      arrayFilters: [{ 'comment._id': commentId }, { 'reply._id': replayId }],
+    },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
+const deleteReplay = async (
+  blogId: string,
+  commentId: string,
+  replayId: string,
+  userInfo: UserInfoFromToken,
+): Promise<IBlog | null> => {
+  const commentator = await Auth.findById(userInfo.id);
+  if (!commentator) {
+    throw new ApiError(httpStatus.CONFLICT, 'Your profile does not exist!!!');
+  }
+
+  const blog = await Blog.findById(blogId);
+
+  if (!blog) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Blog is not exist!!!');
+  }
+
+  const comment = blog.comments.find(com => com._id == commentId);
+
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Comment is not exist!!!');
+  }
+  const replay = comment.replies.find(rep => rep._id == replayId);
+
+  if (!replay) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Replay is not exist!!!');
+  }
+
+  if (replay.user != userInfo.id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This is not your replay!!!');
+  }
+
+  const result = await Blog.findOneAndUpdate(
+    {
+      $and: [
+        { _id: blogId },
+        { 'comments._id': commentId },
+        { 'comments.replies._id': replayId },
+      ],
+    },
+    {
+      $pull: {
+        'comments.$.replies': { _id: replayId },
+      },
+    },
+    {
+      new: true,
+    },
+  )
+    .populate({
+      path: 'creatorId',
+      select: {
+        name: true,
+      },
+    })
+    .populate({
+      path: 'comments',
+      populate: [
+        {
+          path: 'user',
+          select: 'name',
+        },
+        {
+          path: 'replies',
+          populate: {
+            path: 'user',
+            select: 'name',
+          },
+        },
+      ],
+    });
+
+  return result;
+};
+
 export const BlogService = {
   createBlog,
   getAllBlogs,
@@ -517,4 +731,7 @@ export const BlogService = {
   commentOnBlog,
   updateComment,
   deleteComment,
+  replayOnComment,
+  updateReplay,
+  deleteReplay,
 };

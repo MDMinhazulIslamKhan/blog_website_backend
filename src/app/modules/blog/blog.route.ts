@@ -50,22 +50,22 @@ router.delete(
   BlogController.deleteComment,
 );
 
-// router.post(
-//   '/:blogId/comment/:commentId',
-//   auth(),
-//   BlogController.replayOnComment,
-// );
+router.post(
+  '/:blogId/comment/:commentId/replay',
+  auth(),
+  BlogController.replayOnComment,
+);
 
-// router.patch(
-//   '/:blogId/comment/:commentId/replay/:replayId',
-//   auth(),
-//   BlogController.updateReplay,
-// );
+router.patch(
+  '/:blogId/comment/:commentId/replay/:replayId',
+  auth(),
+  BlogController.updateReplay,
+);
 
-// router.delete(
-//   '/:blogId/comment/:commentId/replay/:replayId',
-//   auth(),
-//   BlogController.deleteReplay,
-// );
+router.delete(
+  '/:blogId/comment/:commentId/replay/:replayId',
+  auth(),
+  BlogController.deleteReplay,
+);
 
 export const BlogRouters = router;
