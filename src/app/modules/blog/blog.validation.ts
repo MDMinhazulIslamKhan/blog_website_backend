@@ -7,7 +7,7 @@ const createBlogZodSchema = z.object({
         required_error: 'Title is required',
       }),
       imgUrl: z.string({
-        required_error: 'Title is required',
+        required_error: 'Image is required',
       }),
       description: z.string({
         required_error: 'Description is required',

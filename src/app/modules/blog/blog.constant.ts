@@ -1,6 +1,1 @@
-export const blogFilterableField = [
-  'searchTerm',
-  'description',
-  'title',
-  'deadLine',
-];
+export const blogFilterableField = ['searchTerm', 'description', 'title'];
