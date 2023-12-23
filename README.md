@@ -1,6 +1,6 @@
 # **Blog Application Backend**
 
-### **Live Link: https://my-blog-website-r84438mcw-mdminhazulislamkhan.vercel.app**
+### **Live Link: https://my-blog-website-zeta.vercel.app**
 
 ### **Backend Live Link: https://my-blog-onq714b0x-mdminhazulislamkhan.vercel.app**
 
